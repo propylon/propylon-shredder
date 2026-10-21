@@ -1,0 +1,134 @@
+[project]
+name = "propylon-shredder"
+version = "0.1.0"
+description = "Service to run PDF2HTMLEX library using Procrastinate."
+requires-python = ">=3.13.11, <3.14"
+dependencies = [
+    "psycopg2-binary>=2.9.0",
+    "procrastinate>=3.8.1",
+    "sqlalchemy>=2.0.44",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "shredder"
+module-root = "apps/shredder/src"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [".", "apps/shredder/src"]
+testpaths = ["apps/shredder/tests"]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+indent-width = 4
+src = ["apps/shredder/src", "apps/shredder/tests"]
+extend-exclude = []  # e.g. ["*.ipynb"]
+
+lint.select = [
+  # --- Lean baseline ---
+  # Core correctness & style (pycodestyle / pyflakes)
+  "E", "W", "F",
+  # Imports ordering & cleanups
+  "I",
+  # Safe modernizations (pyupgrade)
+  "UP",
+  # Potential bugs / unsafe patterns
+  "B",
+  # Comprehension clarity
+  "C4",
+  # Phased expansion candidates (uncomment when ready):
+  # "RUF" - ruff's own high‑value internal rules
+	"RUF003",
+	"RUF005",
+	"RUF013",
+	"RUF017",
+	"RUF018",
+	"RUF019",
+	"RUF021",
+	"RUF022",
+	"RUF010",
+  "N",   # naming consistency
+  "A",   # builtins shadowing
+  "ARG", # unused function args
+  "ERA", # eradicate dead commented code
+  "TID", # tidy imports (import star / cyclic)
+  "SIM", # simplify constructs
+  "TRY", # exception handling patterns
+  "DTZ", # timezone-aware datetimes
+  "RET", # consistent returns
+  "PLR", # refactor metrics (complexity/too many branches)
+  "PTH", # prefer pathlib over os.path
+  "G",   # logging format issues
+  "PGH" # invalid escape sequences, highlighting
+]
+
+# Ignore the same rules as current flake8 config
+lint.ignore = [
+  # "B" - flake8-bugbear
+  # "B009",  # Avoid calling getattr with a constant attribute name
+  # "B018",  # Ignore useless expressions that have no effect
+  # "B904",  # Don't require 'raise ... from err' inside except blocks
+
+  # C - flake8-comprehensions and others
+  # "C403",  # Ignore list comprehensions that could be set comprehensions
+
+  # DJ - Django related issues to ignore
+  # "DJ001", # Checks nullable string-based fields (like CharField and TextField) in Django models.
+
+  # E - pycodestyle errors
+  # "E203",  # Ignore whitespace before punctuation (conflicts with formatter)
+  # "E501",  # Ignore line length (handled by formatter)
+
+  # RUF - Ruff-specific rules
+  # "RUF012",  # Mutable class attributes - conflicts with Django patterns (Admin, Models, migrations)
+  # "RUF001",  # Ambiguous unicode characters in strings - intentional for legal text, quote conversion, and character mappings
+
+  # UP - pyupgrade
+  # "UP035",  # Ignore deprecated imports from collections.abc
+
+  # "ARG001",
+  # "ARG002",
+  # "ERA001",
+  # "PGH003",
+  # "PGH004",
+  # "PLR2004",
+  # "TRY003",
+  # "TRY300",
+  # "TRY401",
+]
+
+lint.fixable = ["ALL"]
+
+# Ruff formatter configuration - replaces black
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["shredder", "tests"]
+
+[tool.ruff.lint.isort.sections]
+
+[tool.ty.rules]
+# possibly-missing-attribute = "ignore"
+# invalid-argument-type ="ignore"
+# unresolved-attribute = "ignore"
+
+[tool.ty.src]
+include = ["apps/shredder/src", "apps/shredder/tests"]
+exclude = []

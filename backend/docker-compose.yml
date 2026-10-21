@@ -1,0 +1,21 @@
+name: shredder
+
+services:  
+  app:
+    build:
+      context: ${PWD}
+      dockerfile: docker/Dockerfile
+    env_file: .env
+    environment:
+      DJANGO_STATIC_ROOT: "/apps/static/"
+      PYTHONPATH: /apps/research_tool/src:/apps/research_worker/src
+    volumes:
+      - ${PWD}apps/shredder/src:/apps/shredder/src
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true
+    name: ${DOCKER_NETWORK_NAME}
+    driver: bridge
