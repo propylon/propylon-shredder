@@ -3,12 +3,13 @@ import logging
 import os
 import subprocess
 import tempfile
-import requests
 import zipfile
+from pathlib import Path
+
+import requests
 
 import shredder
-from shredder import settings
-from shredder import utils
+from shredder import settings, utils
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +44,10 @@ async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
     - Sends the result to the callback URL
     """
 
-    # Generate a temp file to store the downloaded PDF and a temp directory for the output HTML files
+    # Generate a temp file to store the downloaded PDF
+    # and a temp directory for the output HTML files
     with (
-        tempfile.NamedTemporaryFile(suffix=".pdf") as tff, 
+        tempfile.NamedTemporaryFile(suffix=".pdf") as tff,
         tempfile.TemporaryDirectory() as tdir
     ):
         # Download the document from the specified provider and write it to the temp file
@@ -73,14 +75,24 @@ async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
             )
 
         # Zip the output HTML files
-        with zipfile.ZipFile(f"{tdir}/{job_id}.zip", "w") as zipf:
+        with zipfile.ZipFile(f"{tdir}/{job_id}.zip", "w") as zip_ff:
             for root, _, files in os.walk(tdir):
                 for file in files:
-                    zipf.write(os.path.join(root, file), arcname=file)
+                    this_file_path = Path(root) / file
+                    with this_file_path.open("rb") as this_ff:
+                        zip_ff.write(
+                            this_ff,
+                            arcname=file
+                        )
 
         # Post the zipped result to the callback URL
-        response = requests.post(call_back_url, files={"file": open(f"{tdir}/{job_id}.zip", "rb")})
-        logger.info("Posted result to callback URL: %s, response: %s", call_back_url, response.status_code)
+        with Path(f"{tdir}/{job_id}.zip").open("rb") as zip_ff:
+            response = requests.post(call_back_url, files={"file": zip_ff})
+        logger.info(
+            "Posted result to callback URL: %s, response: %s",
+            call_back_url,
+            response.status_code
+        )
 
 
 @shredder.app.task(queue=settings.PROCRASTINATE_QUEUE, pass_context=True)

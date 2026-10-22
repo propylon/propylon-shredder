@@ -4,13 +4,13 @@ services:
   app:
     build:
       context: ${PWD}
-      dockerfile: docker/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION}
     env_file: .env
-    environment:
-      DJANGO_STATIC_ROOT: "/apps/static/"
-      PYTHONPATH: /apps/research_tool/src:/apps/research_worker/src
+    command: ["/bin/sh", "-c", "exec /propylon/etc/run_server.sh"]
     volumes:
-      - ${PWD}apps/shredder/src:/apps/shredder/src
+      - ${PWD}/shredder/src:/propylon/shredder/src
     networks:
       - backend
 

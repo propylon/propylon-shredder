@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "Service to run PDF2HTMLEX library using Procrastinate."
 requires-python = ">=3.13.11, <3.14"
 dependencies = [
-    "psycopg2-binary>=2.9.0",
     "procrastinate>=3.8.1",
     "sqlalchemy>=2.0.44",
 ]
@@ -16,24 +15,24 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build"]
 build-backend = "uv_build"
+requires = ["uv_build>=0.10.1,<0.11.0"]
 
 [tool.uv.build-backend]
 module-name = "shredder"
-module-root = "apps/shredder/src"
+module-root = "shredder/src"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
-pythonpath = [".", "apps/shredder/src"]
-testpaths = ["apps/shredder/tests"]
+pythonpath = [".", "shredder/src"]
+testpaths = ["shredder/tests"]
 
 # Ruff configuration
 [tool.ruff]
 target-version = "py313"
 line-length = 100
 indent-width = 4
-src = ["apps/shredder/src", "apps/shredder/tests"]
+src = ["shredder/src", "shredder/tests"]
 extend-exclude = []  # e.g. ["*.ipynb"]
 
 lint.select = [
@@ -130,5 +129,5 @@ known-first-party = ["shredder", "tests"]
 # unresolved-attribute = "ignore"
 
 [tool.ty.src]
-include = ["apps/shredder/src", "apps/shredder/tests"]
+include = ["shredder/src", "shredder/tests"]
 exclude = []

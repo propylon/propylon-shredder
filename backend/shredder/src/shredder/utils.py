@@ -1,6 +1,7 @@
+import asyncio
 import socket
 from functools import wraps
-import asyncio
+
 
 def worker_identity(job_context) -> dict:
     """Which machine and worker are running this job. worker_id says nothing about the VM."""

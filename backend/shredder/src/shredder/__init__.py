@@ -1,9 +1,9 @@
 import os
+
 import procrastinate
 from procrastinate.manager import JobManager
 
-import shredder.settings as settings
-import shredder.utils as utils
+from shredder import settings, utils
 
 WORKERS = {
     settings.PROCRASTINATE_WORKER: {"queues": settings.PROCRASTINATE_QUEUES.split(",")},
