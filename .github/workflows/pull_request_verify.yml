@@ -1,0 +1,61 @@
+name: Verify Changes
+
+# This workflow will run on PR open or update
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  paths:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      actions: read
+      contents: read
+    # Set job outputs to values from filter step
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      lint_actions: ${{ steps.filter.outputs.lint_actions }}
+    steps:
+      - name: Checkout code
+        if: github.event_name == 'merge_group' # Run only for merge queue
+        uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            backend:
+              - "backend/**"
+            lint_actions:
+              - ".github/**"
+
+  # Verify Backend
+  backend:
+    needs: paths
+    uses: ./.github/workflows/backend_validate.yml
+    if: ${{ needs.paths.outputs.backend == 'true' }}
+
+  # Verify Workflows
+  lint_actions:
+    needs: paths
+    if: ${{ needs.paths.outputs.lint_actions == 'true' }}
+    uses: ./.github/workflows/lint-actions.yml
+
+  # Verify All Passed
+  verify_all_passed:
+    needs: [backend, lint_actions]
+    runs-on: ubuntu-latest
+    if: ${{ always() && (failure() || cancelled()) }}
+    steps:
+      - name: Fail job
+        uses: actions/github-script@v8.0.0
+        with:
+          script: core.setFailed('Some checks failed or cancelled.')

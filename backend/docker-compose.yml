@@ -2,6 +2,8 @@ name: shredder
 
 services:  
   app:
+    container_name: propylon_shredder
+    hostname: propylon_shredder
     build:
       context: ${PWD}
       dockerfile: Dockerfile

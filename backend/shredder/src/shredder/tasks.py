@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 #     "s3": get_doc_from_s3,
 # }
 
-async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
+async def handle_conversion(job_id, doc_path, call_back_url, doc_provider, metadata):
     """
     Handles the conversion of a PDF document to HTML using pdf2htmlEX.
     - Downloads the document from the specified provider
@@ -56,7 +56,7 @@ async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
 
         # Run the PDF to HTML conversion command in a subprocess
         command = [
-            "pdf2htmlEX",
+            "/usr/local/bin/pdf2htmlEX",  # points to the installed location in the container.
             "--embed", "cfijo",
             "--split-pages", "1",
             "--dest-dir", tdir,
@@ -70,9 +70,10 @@ async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
         )
         stdout, stderr = await process.communicate()
         if process.returncode:
-            raise subprocess.CalledProcessError(
-                process.returncode, command, output=stdout, stderr=stderr
-            )
+            raise Exception(f"{process.returncode} {command} {stdout} {stderr}")
+            # raise subprocess.CalledProcessError(
+            #     process.returncode, command, output=stdout, stderr=stderr
+            # )
 
         # Zip the output HTML files
         with zipfile.ZipFile(f"{tdir}/{job_id}.zip", "w") as zip_ff:
@@ -86,10 +87,21 @@ async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
                         )
 
         # Post the zipped result to the callback URL
+        data = {
+            "file": zip_ff,
+            "job_id": job_id,
+            "doc_path": doc_path,
+            "doc_provider": doc_provider,
+            **(metadata or {})
+        }
         with Path(f"{tdir}/{job_id}.zip").open("rb") as zip_ff:
-            response = requests.post(call_back_url, files={"file": zip_ff})
+            response = requests.post(
+                call_back_url,
+                data=data
+            )
         logger.info(
-            "Posted result to callback URL: %s, response: %s",
+            "Posted result data: %s to callback URL: %s, response: %s",
+            str(data),
             call_back_url,
             response.status_code
         )
@@ -97,15 +109,16 @@ async def handle_conversion(job_id, doc_path, call_back_url, doc_provider):
 
 @shredder.app.task(queue=settings.PROCRASTINATE_QUEUE, pass_context=True)
 async def convert_pdf_to_html(
-    job_context, doc_path: str, call_back_url: str, doc_provider: str = "url"
+    job_context, doc_path: str, call_back_url: str, doc_provider: str = "url", metadata: dict | None = None
 ):
     """
     - ...
+    NOTE: only one doc_provider currently supported: GET from "url"
     """
-    job_id = job_context.job_id
+    job_id = job_context.job.id
 
     @utils.set_timeout(settings.MAX_JOB_TTL)
     async def _run_job(*args):
         return await handle_conversion(*args)
 
-    return await _run_job(job_id, doc_path, call_back_url, doc_provider)
+    return await _run_job(job_id, doc_path, call_back_url, doc_provider, metadata)

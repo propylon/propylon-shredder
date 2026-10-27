@@ -41,15 +41,19 @@ COPY --from=buid-image /opt/python /opt/python
 ENV PATH="/opt/python/bin:${PATH}"
 RUN ln -sf /opt/python/bin/python$PYTHON_VERSION /usr/local/bin/python3 \
  && ln -sf /opt/python/bin/python$PYTHON_VERSION /usr/local/bin/python
-
+# Validate python
 RUN python3 --version
+
+# For Procrastinate PG Connector - ctypes.find_library needs libpq's linker files and binutils on musl.
+RUN apk add --no-cache postgresql-dev binutils
 
 COPY .env /propylon/
 COPY pyproject.toml /propylon/
 COPY uv.lock /propylon/
-COPY ./etc /propylon/
-COPY ./shredder/src /propylon/shredder/src
+COPY ./etc /propylon/etc/
+COPY ./shredder/src /propylon/shredder/src/
 
+RUN chmod +x /propylon/etc/run_server.sh
 RUN set -o allexport && source /propylon/.env && set +o allexport
 
 # RUN apk update
@@ -78,4 +82,6 @@ RUN uv sync --locked --no-dev
 # Set exec permission for the startup scripts.
 # RUN find /propylon/etc -name '*.sh' -exec chmod +x {} +
 
+# Override the original base image entrypoint
+ENTRYPOINT []
 CMD ["/bin/sh", "-c", "exec /propylon/etc/run_server.sh"]

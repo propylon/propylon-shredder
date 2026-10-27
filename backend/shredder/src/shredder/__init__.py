@@ -5,10 +5,6 @@ from procrastinate.manager import JobManager
 
 from shredder import settings, utils
 
-WORKERS = {
-    settings.PROCRASTINATE_WORKER: {"queues": settings.PROCRASTINATE_QUEUES.split(",")},
-}
-
 DB_CONFIG_FSTRING = "postgres://{user}:{password}@{host}:{port}/{dbname}"
 
 PG_CONNECTOR = procrastinate.PsycopgConnector(

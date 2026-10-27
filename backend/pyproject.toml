@@ -5,6 +5,8 @@ description = "Service to run PDF2HTMLEX library using Procrastinate."
 requires-python = ">=3.13.11, <3.14"
 dependencies = [
     "procrastinate>=3.8.1",
+    "psycopg[pool]",
+    "requests",
     "sqlalchemy>=2.0.44",
 ]
 
@@ -17,6 +19,11 @@ dev = [
 [build-system]
 build-backend = "uv_build"
 requires = ["uv_build>=0.10.1,<0.11.0"]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
 
 [tool.uv.build-backend]
 module-name = "shredder"
