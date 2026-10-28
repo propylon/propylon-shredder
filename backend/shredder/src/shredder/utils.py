@@ -1,11 +1,5 @@
 import asyncio
-import socket
 from functools import wraps
-
-
-def worker_identity(job_context) -> dict:
-    """Which machine and worker are running this job. worker_id says nothing about the VM."""
-    return {"machine": socket.gethostname(), "worker_name": job_context.worker_name}
 
 
 def set_timeout(seconds):

@@ -15,6 +15,9 @@ services:
       - ${PWD}/shredder/src:/propylon/shredder/src
     networks:
       - backend
+    # Lets the worker reach services on the host, e.g. the integration test mock server.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 networks:
   backend:

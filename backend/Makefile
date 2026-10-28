@@ -70,15 +70,22 @@ lint:
 # Testing
 # ====================
 
-test:
-	$(IN_ENV) py.test $(filter-out $@,$(MAKECMDGOALS))
+test-functional:
+	$(IN_ENV) py.test -k test_functional
+
+test-integration: 
+	$(IN_ENV) py.test -k test_integration
+
+test: test-functional
+
+test-suite: test-functional test-integration
 
 test-cov:
-	COVERAGE_PROCESS_START=pyproject.toml COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage run -m pytest
+	COVERAGE_PROCESS_START=pyproject.toml COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage run -m pytest -k test_functional
 	- COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage combine
 	COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage report
 
 test-cov-html:
-	COVERAGE_PROCESS_START=pyproject.toml COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage run -m pytest
+	COVERAGE_PROCESS_START=pyproject.toml COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage run -m pytest -k test_functional
 	- COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage combine
 	COVERAGE_FILE=.pytest_coverage $(IN_ENV) coverage html
