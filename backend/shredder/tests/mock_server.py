@@ -25,7 +25,7 @@ def parse_multipart(content_type: str, body: bytes) -> tuple[dict, dict]:
     fields, files = {}, {}
     for part in message.iter_parts():
         name = part.get_param("name", header="content-disposition")
-        payload = part.get_payload(decode=True) or b""
+        payload = bytes(part.get_payload(decode=True)) or b""
         filename = part.get_filename()
         if filename is None:
             fields[name] = payload.decode()

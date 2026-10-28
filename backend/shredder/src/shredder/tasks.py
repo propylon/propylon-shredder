@@ -1,11 +1,9 @@
 import asyncio
-import io
 import logging
 import os
 import tempfile
 import zipfile
 from pathlib import Path
-from typing import Any
 
 import httpx
 
@@ -44,7 +42,14 @@ def zip_directory(src_dir: str, zip_path: str) -> None:
                 zip_ff.write(Path(root) / file, arcname=file)
 
 
-async def handle_conversion(job_id, doc_path, call_back_url, call_back_auth, doc_provider, metadata):
+async def handle_conversion(
+    job_id,
+    doc_path,
+    call_back_url,
+    call_back_auth,
+    doc_provider,
+    metadata
+):
     """
     Handles the conversion of a PDF document to HTML using pdf2htmlEX.
     - Downloads the document from the specified provider
@@ -71,7 +76,7 @@ async def handle_conversion(job_id, doc_path, call_back_url, call_back_auth, doc
         # and a temp directory for the output HTML files
         with (
             tempfile.NamedTemporaryFile(suffix=".pdf", delete=True) as tff,  # The incoming PDF file
-            tempfile.TemporaryDirectory(delete=True) as tdir,  # Directory for conversion output files
+            tempfile.TemporaryDirectory(delete=True) as tdir,  # Directory for conversion output
             tempfile.TemporaryDirectory(delete=True) as zip_dir,  # Directory for the zipped output
         ):
             # Download the document from the specified provider and write it to the temp file
@@ -124,7 +129,8 @@ async def handle_conversion(job_id, doc_path, call_back_url, call_back_auth, doc
                 )
                 zip_ff_len = zip_ff.seek(0)
                 logger.info(
-                    "Posted result data: %s with file len %d to callback URL: %s, response code: %d",
+                    "Posted result data: %s with file len %d " \
+                    "to callback URL: %s, response code: %d",
                     str(data),
                     int(zip_ff_len),
                     str(call_back_url),
@@ -134,7 +140,12 @@ async def handle_conversion(job_id, doc_path, call_back_url, call_back_auth, doc
 
 @shredder.app.task(queue=settings.PROCRASTINATE_QUEUE, pass_context=True)
 async def convert_pdf_to_html(
-    job_context, doc_path: str, call_back_url: str, call_back_auth: str | None = None, doc_provider: str = "url", metadata: dict | None = None
+    job_context,
+    doc_path: str,
+    call_back_url: str,
+    call_back_auth: str | None = None,
+    doc_provider: str = "url",
+    metadata: dict | None = None
 ):
     """
     A wrapper task for the conversion function. Allows setting a job time-out.
@@ -143,7 +154,8 @@ async def convert_pdf_to_html(
     - job_context: Automatically supplied by procrastinate when triggered.
     - doc_path: The URL pointing to the file to be converted.
     - call_back_url: The URL to post the conversion result (zip file) to.
-    - call_back_auth: Optional `Bearer TOKEN` string for authorization header for the callback endpoint.
+    - call_back_auth: Optional `Bearer TOKEN` string
+        for authorization header for the callback endpoint.
     - doc_provider: The provider to fetch the document from. Only "url" is currently supported.
     - metadata: Optional passed-through metadata dict/JSON to include in the callback.
     """

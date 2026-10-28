@@ -83,37 +83,9 @@ lint.select = [
 
 # Ignore the same rules as current flake8 config
 lint.ignore = [
-  # "B" - flake8-bugbear
-  # "B009",  # Avoid calling getattr with a constant attribute name
-  # "B018",  # Ignore useless expressions that have no effect
-  # "B904",  # Don't require 'raise ... from err' inside except blocks
-
-  # C - flake8-comprehensions and others
-  # "C403",  # Ignore list comprehensions that could be set comprehensions
-
-  # DJ - Django related issues to ignore
-  # "DJ001", # Checks nullable string-based fields (like CharField and TextField) in Django models.
-
-  # E - pycodestyle errors
-  # "E203",  # Ignore whitespace before punctuation (conflicts with formatter)
-  # "E501",  # Ignore line length (handled by formatter)
-
-  # RUF - Ruff-specific rules
-  # "RUF012",  # Mutable class attributes - conflicts with Django patterns (Admin, Models, migrations)
-  # "RUF001",  # Ambiguous unicode characters in strings - intentional for legal text, quote conversion, and character mappings
-
-  # UP - pyupgrade
-  # "UP035",  # Ignore deprecated imports from collections.abc
-
-  # "ARG001",
-  # "ARG002",
-  # "ERA001",
-  # "PGH003",
-  # "PGH004",
-  # "PLR2004",
-  # "TRY003",
-  # "TRY300",
-  # "TRY401",
+  "PLR0917",
+  "PLR0913",
+  "TRY003",
 ]
 
 lint.fixable = ["ALL"]
@@ -130,11 +102,6 @@ combine-as-imports = true
 known-first-party = ["shredder", "tests"]
 
 [tool.ruff.lint.isort.sections]
-
-[tool.ty.rules]
-# possibly-missing-attribute = "ignore"
-# invalid-argument-type ="ignore"
-# unresolved-attribute = "ignore"
 
 [tool.ty.src]
 include = ["shredder/src", "shredder/tests"]
