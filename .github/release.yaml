@@ -1,0 +1,25 @@
+changelog:
+  categories:
+    - title: 🚨 Breaking Changes
+      labels:
+        - breaking change
+
+    - title: ✨ Features
+      labels:
+        - feature
+
+    - title: 🐛 Bugs
+      labels:
+        - bug
+
+    - title: 📋 Tasks
+      labels:
+        - task
+
+    - title: 📑 Change Requests
+      labels:
+        - CR
+
+    - title: 📦 Other Changes
+      labels:
+        - "*"

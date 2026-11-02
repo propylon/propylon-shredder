@@ -1,0 +1,76 @@
+name: Backend Build, Lint, and Test
+
+on:
+  workflow_call:
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Test
+    # Switching to self-hosted runner from `runs-on: ubuntu-latest`
+    # TEMP: runner filtering (we prob need new dedicated runners):
+    runs-on: [ubuntu-latest]
+    defaults:
+      run:
+        working-directory: ./backend
+    # Don't run the job if the PR is a draft PR
+    if: ${{ !github.event.pull_request.draft }}
+
+    services:
+      postgres:
+        image: postgres:alpine
+        env:
+          POSTGRES_USER: ${{ env.PROCRASTINATE_DB_USER }}
+          POSTGRES_DB: ${{ env.PROCRASTINATE_DB_NAME }}
+          POSTGRES_PASSWORD: ${{ env.PROCRASTINATE_DB_PASSWORD }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      PROCRASTINATE_DB_USER: db_admin
+      PROCRASTINATE_DB_NAME: shredder_procrastinate_db
+      PROCRASTINATE_DB_PASSWORD: db_password
+      # Determine whether the workflow was triggered by merge queue
+      MERGE_QUEUE: ${{ github.event_name == 'merge_group' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: astral-sh/setup-uv@v8.0.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "./pyproject.toml"
+          working-directory: "./backend"
+          prune-cache: false
+
+      - name: Build
+        run: |
+          cp .env.example .env
+          make env
+          make build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+
+      - name: Lint
+        id: run-lint
+        run: |
+          make lint
+
+      - name: Run Tests with Coverage
+        run: |
+          make test-cov
+
+      - name: Coverage threshold (warn only)
+        continue-on-error: true
+        run: |
+          COVERAGE_FILE=.pytest_coverage ~/.local/bin/uv run coverage report --fail-under=80

@@ -1,0 +1,72 @@
+name: Release Backend
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+
+jobs:
+  build-and-push:
+    environment: ${{ inputs.environment }}
+    name: Backend Release to GitHub
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Generate .env file
+        run: | 
+          cp .env.example .env
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker (app)
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/propylon/${{ github.repository }}/backend
+
+      - name: Build and push Docker image (app)
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend/.
+          file: ./backend/Dockerfile
+          target: migrate_stage
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Extract metadata (tags, labels) for Docker (worker)
+        id: meta-worker
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/propylon/${{ github.repository }}/backend-worker
+
+      - name: Build and push Docker image (worker)
+        uses: docker/build-push-action@v7
+        with:
+          context: ./backend/.
+          file: ./backend/Dockerfile
+          target: worker_stage
+          push: true
+          tags: ${{ steps.meta-worker.outputs.tags }}
+          labels: ${{ steps.meta-worker.outputs.labels }}

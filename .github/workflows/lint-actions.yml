@@ -1,0 +1,22 @@
+# This workflow will lint github actions workflows
+# on pull requests that modify the .github directory.
+
+name: "Workflow linter 🧹"
+on:
+  workflow_call:
+
+jobs:
+  lint:
+    name: Lint Workflows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.0" # The Go version to download (if necessary) and use.
+          cache: true
+      - run: go install github.com/rhysd/actionlint/cmd/actionlint@latest
+      - run: actionlint

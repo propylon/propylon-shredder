@@ -1,0 +1,120 @@
+[project]
+name = "propylon-shredder"
+version = "0.1.0"
+description = "Service to run PDF2HTMLEX library using Procrastinate."
+requires-python = ">=3.13.11, <3.14"
+dependencies = [
+    "httpx>=0.28.1",
+    "procrastinate>=3.8.1",
+    "psycopg[pool]",
+    "sqlalchemy>=2.0.44",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "coverage",
+    "ruff==0.16.3",
+    "ty==0.0.72",
+]
+
+[build-system]
+build-backend = "uv_build"
+requires = ["uv_build>=0.10.1,<0.11.0"]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+
+[tool.uv.build-backend]
+module-name = "shredder"
+module-root = "shredder/src"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = [".", "shredder/src"]
+testpaths = ["shredder/tests"]
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+indent-width = 4
+src = ["shredder/src", "shredder/tests"]
+extend-exclude = []  # e.g. ["*.ipynb"]
+
+lint.select = [
+  # --- Lean baseline ---
+  # Core correctness & style (pycodestyle / pyflakes)
+  "E", "W", "F",
+  # Imports ordering & cleanups
+  "I",
+  # Safe modernizations (pyupgrade)
+  "UP",
+  # Potential bugs / unsafe patterns
+  "B",
+  # Comprehension clarity
+  "C4",
+  # Phased expansion candidates (uncomment when ready):
+  # "RUF" - ruff's own high‑value internal rules
+	"RUF003",
+	"RUF005",
+	"RUF013",
+	"RUF017",
+	"RUF018",
+	"RUF019",
+	"RUF021",
+	"RUF022",
+	"RUF010",
+  "N",   # naming consistency
+  "A",   # builtins shadowing
+  "ARG", # unused function args
+  "ERA", # eradicate dead commented code
+  "TID", # tidy imports (import star / cyclic)
+  "SIM", # simplify constructs
+  "TRY", # exception handling patterns
+  "DTZ", # timezone-aware datetimes
+  "RET", # consistent returns
+  "PLR", # refactor metrics (complexity/too many branches)
+  "PTH", # prefer pathlib over os.path
+  "G",   # logging format issues
+  "PGH" # invalid escape sequences, highlighting
+]
+
+# Ignore the same rules as current flake8 config
+lint.ignore = [
+  "PLR0917",
+  "PLR0913",
+  "TRY003",
+]
+
+lint.fixable = ["ALL"]
+
+# Ruff formatter configuration - replaces black
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+known-first-party = ["shredder", "tests"]
+
+[tool.ruff.lint.isort.sections]
+
+[tool.ty.src]
+include = ["shredder/src", "shredder/tests"]
+exclude = []
+
+[tool.coverage.report]
+include = [
+    "shredder/src/**/*.py"
+]
+skip_covered = false  
+exclude_lines = [  
+    "pragma: no cover",  
+    "if TYPE_CHECKING:",  
+]

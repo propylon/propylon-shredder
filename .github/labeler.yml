@@ -1,0 +1,48 @@
+# File types
+documentation:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.md', '**/*.mdx']
+
+localization:
+- changed-files:
+  - any-glob-to-any-file: ['**/localization/**/*']
+
+test:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx']
+
+
+# Languages
+python:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.py']
+
+typescript:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.ts']
+
+react:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.tsx']
+
+c-sharp:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.cs']
+
+yaml:
+- changed-files:
+  - any-glob-to-any-file: ['**/*.yml']
+
+
+# Functional areas
+backend:
+- changed-files:
+  - any-glob-to-any-file: ['backend/**/*']
+
+frontend:
+- changed-files:
+  - any-glob-to-any-file: ['frontend/**/*']
+
+github actions:
+- changed-files:
+  - any-glob-to-any-file: ['.github/**/*']
