@@ -4,6 +4,8 @@ Shredder is a custom Procrastinate worker service that converts PDF files to pag
 [pdf2htmlEX](https://github.com/pdf2htmlEX/pdf2htmlEX). It reads jobs from
 PostgreSQL and POSTs a ZIP of the converted files to each job's callback URL.
 
+**In the `backend/` folder:**
+
 ## Run with Docker
 
 You need Docker, Docker Compose, and `make`. From this directory:
