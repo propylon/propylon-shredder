@@ -127,7 +127,7 @@ async def handle_conversion(
                     files={"file": (Path(zip_path).name, zip_ff, "application/octet-stream")},
                     headers=headers,
                 )
-                zip_ff_len = zip_ff.seek(0)
+                zip_ff_len = zip_ff.seek(0, os.SEEK_END)
                 logger.info(
                     "Posted result data: %s with file len %d " \
                     "to callback URL: %s, response code: %d",
