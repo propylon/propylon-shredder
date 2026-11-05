@@ -21,7 +21,7 @@ dev = [
 
 [build-system]
 build-backend = "uv_build"
-requires = ["uv_build>=0.10.1,<0.11.0"]
+requires = ["uv_build>=0.10.1,<0.14.0"]
 
 [tool.uv]
 required-environments = [
