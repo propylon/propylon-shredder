@@ -5,7 +5,7 @@ ARG base_image=pdf2htmlex/pdf2htmlex:0.18.8.rc2-master-20200820-alpine-3.12.0-x8
 
 # #################################################################################################
 # Stage 1: Build Image - Grab a prebuilt, portable Python 3.13 (musl/Alpine-compatible)
-FROM ${base_image} AS buid-image
+FROM ${base_image} AS build-image
 
 # Download Python
 ARG PYTHON_VERSION
@@ -28,11 +28,11 @@ RUN mkdir -p /opt/python \
 FROM ${base_image} AS service-image
 
 # Copy the APK package registry to avoid re-running apk update
-COPY --from=buid-image /var/cache/apk/ /var/cache/apk/
+COPY --from=build-image /var/cache/apk/ /var/cache/apk/
 
 # Copy the Python installation
 ARG PYTHON_VERSION
-COPY --from=buid-image /opt/python /opt/python
+COPY --from=build-image /opt/python /opt/python
 ENV PATH="/opt/python/bin:${PATH}"
 RUN ln -sf /opt/python/bin/python$PYTHON_VERSION /usr/local/bin/python3 \
  && ln -sf /opt/python/bin/python$PYTHON_VERSION /usr/local/bin/python
@@ -49,9 +49,8 @@ COPY ./etc /propylon/etc/
 COPY ./shredder/src /propylon/shredder/src/
 
 RUN chmod +x /propylon/etc/run_server.sh
-RUN set -o allexport && source /propylon/.env && set +o allexport
 
-# TODO:Recommended by PDF2HTMLEX to get better results. Add to subprocess calls
+# NOTE: Recommended by PDF2HTMLEX to get better results. Add to subprocess calls
 # RUN apk add ttfautohint && \
 
 RUN pip install uv

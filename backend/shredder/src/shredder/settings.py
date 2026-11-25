@@ -1,11 +1,12 @@
 import os
 
+# Config for application logic
 PROCRASTINATE_MAX_JOB_TTL = int(os.getenv("PROCRASTINATE_MAX_JOB_TTL", 600))
-
 PROCRASTINATE_QUEUE = os.getenv("PROCRASTINATE_QUEUE", "shredder_queue")
 PROCRASTINATE_WORKER = os.getenv("PROCRASTINATE_WORKER", "shredder_worker")
-PROCRASTINATE_TASK_PATHS = os.environ["PROCRASTINATE_TASK_PATHS"].split(",")
+PROCRASTINATE_TASK_PATHS = os.getenv("PROCRASTINATE_TASK_PATHS", "shredder.tasks").split(",")
 
+# Config for service integration
 PROCRASTINATE_DB_USER = os.environ["PROCRASTINATE_DB_USER"]
 PROCRASTINATE_DB_PASSWORD = os.environ["PROCRASTINATE_DB_PASSWORD"]
 PROCRASTINATE_DB_HOST = os.environ["PROCRASTINATE_DB_HOST"]

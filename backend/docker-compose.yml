@@ -3,7 +3,7 @@ name: shredder
 services:  
   app:
     container_name: propylon_shredder
-    hostname: propylon_shredder
+    hostname: propylonshredder
     build:
       context: ${PWD}
       dockerfile: Dockerfile
@@ -14,7 +14,9 @@ services:
     volumes:
       - ${PWD}/shredder/src:/propylon/shredder/src
     networks:
-      - backend
+      backend:
+        aliases:
+          - propylonshredder
     # Lets the worker reach services on the host, e.g. the integration test mock server.
     extra_hosts:
       - "host.docker.internal:host-gateway"
