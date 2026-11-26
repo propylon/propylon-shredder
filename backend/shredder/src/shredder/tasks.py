@@ -8,7 +8,7 @@ from pathlib import Path
 import httpx
 
 import shredder
-from shredder import settings, utils, exceptions
+from shredder import exceptions, settings, utils
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +120,7 @@ async def handle_conversion(
                         headers=headers,
                     )
                 except httpx.HTTPError:
-                    logger.error("Failed to post error to callback URL: %s", call_back_url)
+                    logger.exception("Failed to post error to callback URL: %s", call_back_url)
                 raise exceptions.ShredderConversionError(errmsg)
 
             # Zip the output HTML files
