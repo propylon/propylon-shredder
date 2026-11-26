@@ -12,7 +12,8 @@ from unittest.mock import MagicMock, patch
 import httpx
 import pytest
 
-from shredder.tasks import ConversionError, convert_pdf_to_html, zip_directory
+from shredder.exceptions import ShredderConversionError
+from shredder.tasks import convert_pdf_to_html, zip_directory
 from shredder.utils import set_timeout
 from tests.mock_server import parse_multipart
 
@@ -91,6 +92,7 @@ def mock_http():
                 "authorization": request.headers.get("authorization"),
                 "fields": fields,
                 "files": files,
+                "error": b"error" in request.content,
             }
         )
         return httpx.Response(200)
@@ -136,6 +138,7 @@ async def test_functional_convert_pdf_to_html():
     posted = http["post"][0]
     assert posted["url"] == CALLBACK_URL
     assert posted["authorization"] == CALLBACK_AUTH
+    assert posted["error"] is False
     assert posted["fields"] == {
         "job_id": "42",
         "doc_path": DOC_URL,
@@ -165,17 +168,18 @@ async def test_functional_convert_pdf_to_html_without_auth():
 
     posted = http["post"][0]
     assert posted["authorization"] is None
+    assert posted["error"] is False
     assert set(posted["fields"]) == {"job_id", "doc_path", "doc_provider"}
 
 
 async def test_functional_convert_pdf_to_html_conversion_error():
-    """A failing pdf2htmlEX run raises ConversionError and nothing is POSTed."""
+    """A failing pdf2htmlEX run raises ShredderConversionError and nothing is POSTed."""
     fake_exec, _ = _fake_pdf2htmlex(returncode=1)
     with (
         mock_http() as http,
         patch("shredder.tasks.asyncio.create_subprocess_exec", side_effect=fake_exec),
-        pytest.raises(ConversionError, match="conversion failed"),
+        pytest.raises(ShredderConversionError, match="conversion failed"),
     ):
         await _run_conversion()
 
-    assert http["post"] == []
+    assert http["post"][0]["error"] is True

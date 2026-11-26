@@ -1,6 +1,3 @@
-# TODO: Make the build-stage dynamic.
-# Currently the Python version and image/binary URLs are hard-coded
-
 ARG base_image=pdf2htmlex/pdf2htmlex:0.18.8.rc2-master-20200820-alpine-3.12.0-x86_64
 
 # #################################################################################################
@@ -61,7 +58,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 ENV PATH="/propylon/.venv/bin:$PATH"
 
 WORKDIR /propylon/
-RUN uv sync --locked --no-dev
+# Only install the monitoring dependency group (sentry-sdk) when Sentry is enabled
+ARG MONITORING_ENABLED=0
+RUN if [ "$MONITORING_ENABLED" = "1" ]; then \
+        uv sync --locked --no-dev --group monitoring; \
+    else \
+        uv sync --locked --no-dev; \
+    fi
 
 # Override the original base image entrypoint
 ENTRYPOINT []

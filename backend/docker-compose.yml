@@ -9,6 +9,7 @@ services:
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION}
+        MONITORING_ENABLED: ${MONITORING_ENABLED:-0}
     env_file: .env
     command: ["/bin/sh", "-c", "exec /propylon/etc/run_server.sh"]
     volumes:

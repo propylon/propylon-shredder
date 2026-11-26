@@ -22,7 +22,7 @@ env:
 
 # Build the environment
 build:
-	$(UV) sync --locked --group dev
+	$(UV) sync --locked --group dev --group monitoring
 
 env-update:
 	$(UV) lock --upgrade

@@ -38,7 +38,7 @@ You need Docker, Docker Compose, and `make`. From this directory:
 
 The worker listens to the queue set by `PROCRASTINATE_QUEUE`. Shredder does not
 start PostgreSQL; provide a database separately and configure its connection in
-`.env`.
+`.env`. See (documentation)[https://procrastinate.readthedocs.io/en/stable/quickstart.html#prepare-the-database].
 
 ## Queue a conversion
 
@@ -74,10 +74,21 @@ Set values in `.env` for local Docker runs. The main settings are:
 - `PROCRASTINATE_MAX_JOB_TTL`: maximum job runtime in seconds (default: `600`).
 - `SHREDDER_CONVERSION_CONFIG`: optional comma-separated pdf2htmlEX arguments.
 
-See `.env.example` for the full set of build and worker settings. Do not commit
-credentials.
+See `.env.example` for the full set of build and worker settings.
+
+## Monitoring
+
+Integration with Sentry.io through the Python SDK is provided. 
+
+- `MONITORING_ENABLED` turns on/off the integration (default: `0`).  
+- `SENTRY_ENDPOINT` DSN host endpoint for sending logs (default: null).
+- `SENTRY_ENVIRONMENT` environment name for tagging logs (default: null).
+
+When building the Shredder container with monitoring turned off, the Sentry SDK dependency is not included. 
 
 ## Development
+
+**Do not commit credentials.**
 
 The project requires Python 3.13.11. Install the development dependencies with:
 
@@ -96,3 +107,15 @@ Tests:
   mock server on port 1234 that serves `example.pdf` and receives the callback; the
   worker reaches it through `host.docker.internal`.
 - `make test-suite` runs both.
+
+## Deployment
+
+As mentioned above, Shredder requires a Postgres DB service to be available and intialized with the native Procrastinate tables.
+`PROCRASTINATE_DB_*` variables must point to this DB and be defined in the Shredder container.
+
+This project includes workflow for creating a release in the form of a container image hosted on GHCR. 
+The container is built using the included Docker file, with monitoring turned on to include the Sentry SDK dependency.
+The rest of the environment variables are *not* set so that they are not baked into the image. 
+Upon spinning up the container, either using docker-compose or cloud deployment, 
+the environment variable values are injected into the container environment
+so they are available at runtime.

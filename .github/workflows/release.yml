@@ -1,15 +1,12 @@
 name: Release Backend
 
 on:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        type: string
+  push:
+    tags:
+      - "*.*.*"
 
 jobs:
   build-and-push:
-    environment: ${{ inputs.environment }}
     name: Backend Release to GitHub
     runs-on: ubuntu-latest
     permissions:
@@ -46,7 +43,10 @@ jobs:
         with:
           context: ./backend/.
           file: ./backend/Dockerfile
-          target: migrate_stage
+          target: service-image
           push: true
+          build-args: |
+            # Adds optional dependencies for monitoring.
+            MONITORING_ENABLED=1
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
