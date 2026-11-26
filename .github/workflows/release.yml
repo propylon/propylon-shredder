@@ -46,6 +46,7 @@ jobs:
           target: service-image
           push: true
           build-args: |
+            PYTHON_VERSION=3.13 
             # Adds optional dependencies for monitoring.
             MONITORING_ENABLED=1
           tags: ${{ steps.meta.outputs.tags }}
