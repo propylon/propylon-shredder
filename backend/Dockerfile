@@ -39,7 +39,6 @@ RUN python3 --version
 # For Procrastinate PG Connector - ctypes.find_library needs libpq's linker files and binutils on musl.
 RUN apk add --no-cache postgresql-dev binutils
 
-COPY .env /propylon/
 COPY pyproject.toml /propylon/
 COPY uv.lock /propylon/
 COPY ./etc /propylon/etc/
