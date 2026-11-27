@@ -3,18 +3,21 @@ name: shredder
 services:  
   app:
     container_name: propylon_shredder
-    hostname: propylon_shredder
+    hostname: propylonshredder
     build:
       context: ${PWD}
       dockerfile: Dockerfile
       args:
         PYTHON_VERSION: ${PYTHON_VERSION}
+        MONITORING_ENABLED: ${MONITORING_ENABLED:-0}
     env_file: .env
     command: ["/bin/sh", "-c", "exec /propylon/etc/run_server.sh"]
     volumes:
       - ${PWD}/shredder/src:/propylon/shredder/src
     networks:
-      - backend
+      backend:
+        aliases:
+          - propylonshredder
     # Lets the worker reach services on the host, e.g. the integration test mock server.
     extra_hosts:
       - "host.docker.internal:host-gateway"

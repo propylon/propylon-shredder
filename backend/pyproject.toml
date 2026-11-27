@@ -5,7 +5,7 @@ description = "Service to run PDF2HTMLEX library using Procrastinate."
 requires-python = ">=3.13.11, <3.14"
 dependencies = [
     "httpx>=0.28.1",
-    "procrastinate>=3.8.1",
+    "procrastinate==3.12.0",
     "psycopg[pool]",
     "sqlalchemy>=2.0.44",
 ]
@@ -17,6 +17,9 @@ dev = [
     "coverage",
     "ruff==0.16.3",
     "ty==0.0.72",
+]
+monitoring = [
+    "sentry-sdk",
 ]
 
 [build-system]

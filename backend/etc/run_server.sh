@@ -2,13 +2,6 @@
 
 set -e
 
-# TODO: TEMP: currently pulling env vars from .env file directly
-# In production they should be injected into the container at run time.
-# NOTE: Could simply include an empty .env file for remote deployment to avoid clobbering variables.
-set -a
-. /propylon/.env
-set +a
-
 export PYTHONPATH=/propylon/shredder/src
 
 echo "Starting worker..."

@@ -8,16 +8,11 @@ from pathlib import Path
 import httpx
 
 import shredder
-from shredder import settings, utils
+from shredder import exceptions, settings, utils
 
 logger = logging.getLogger(__name__)
 
 
-class ConversionError(Exception):
-    pass
-
-
-# TODO: need to inject the client from the local context
 async def get_doc_from_url(doc_path: str, local_ctx: dict) -> bytes:
     """
     Downloads the document from the given URL and returns its content.
@@ -26,9 +21,10 @@ async def get_doc_from_url(doc_path: str, local_ctx: dict) -> bytes:
     response = await client.get(doc_path)
     return response.content
 
+
 DOC_PROVIDER = {
     "url": get_doc_from_url,
-    # TODO: Add additional providers
+    # NOTE: more providers to be added as needed.
 }
 
 
@@ -59,7 +55,18 @@ async def handle_conversion(
     - Sends the result to the callback URL
     """
 
-    if isinstance(settings.SHREDDER_CONVERSION_CONFIG, str):
+    # Data prep for POST webhook
+    headers = {}
+    data = {
+        "job_id": job_id,
+        "doc_path": doc_path,
+        "doc_provider": doc_provider,
+        **(metadata or {})
+    }
+    if call_back_auth:
+        headers["Authorization"] = call_back_auth
+
+    if settings.SHREDDER_CONVERSION_CONFIG and isinstance(settings.SHREDDER_CONVERSION_CONFIG, str):
         conversion_config = settings.SHREDDER_CONVERSION_CONFIG.split(",")
     else:
         conversion_config = [
@@ -102,7 +109,19 @@ async def handle_conversion(
             )
             stdout, stderr = await process.communicate()
             if process.returncode:
-                raise ConversionError(f"{process.returncode} {command} {stdout} {stderr}")
+                errmsg = (
+                    f"{process.returncode} {command} "
+                    f"{stdout.decode(errors='replace')} {stderr.decode(errors='replace')}"
+                )
+                try:
+                    await http_client.post(
+                        call_back_url,
+                        data={**data, "error": errmsg},
+                        headers=headers,
+                    )
+                except httpx.HTTPError:
+                    logger.exception("Failed to post error to callback URL: %s", call_back_url)
+                raise exceptions.ShredderConversionError(errmsg)
 
             # Zip the output HTML files
             # Written outside tdir so the archive does not include itself while tdir is walked.
@@ -111,16 +130,6 @@ async def handle_conversion(
 
             # Post the zipped result to the callback URL
             with Path(zip_path).open("rb") as zip_ff:
-                headers = {}
-                data = {
-                    "job_id": job_id,
-                    "doc_path": doc_path,
-                    "doc_provider": doc_provider,
-                    **(metadata or {})
-                }
-                if call_back_auth:
-                    headers["Authorization"] = call_back_auth
-
                 response = await http_client.post(
                     call_back_url,
                     data=data,
